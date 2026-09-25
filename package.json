@@ -1,0 +1,37 @@
+{
+  "name": "playable-template-three",
+  "version": "1.0.0",
+  "description": "A starter template for creating playable ads using Three.js and @smoud/playable-sdk with TypeScript support",
+  "scripts": {
+    "dev": "playable-scripts dev",
+    "build": "playable-scripts build"
+  },
+  "keywords": [
+    "playable",
+    "ads",
+    "template",
+    "three",
+    "threejs",
+    "webgl",
+    "3d",
+    "typescript",
+    "game"
+  ],
+  "author": "Smoud",
+  "dependencies": {
+    "@smoud/playable-sdk": "^1.0.23",
+    "gsap": "^3.13.0",
+    "howler": "^2.2.4",
+    "pixi.js": "^8.14.0",
+    "three": "^0.174.0"
+  },
+  "devDependencies": {
+    "@smoud/playable-scripts": "^1.1.2",
+    "@types/howler": "^2.2.12",
+    "@types/three": "^0.174.0",
+    "prettier": "^2.7.1"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  }
+}
