@@ -43,7 +43,7 @@ export default class MainScene {
     private _splashParticles!: SplashEffect;
     private _smokeParticles!: SplashEffect;
     private _cameraOffset = new THREE.Vector3(0, 6, 4); // closer camera
-    private _portraitOffset = new THREE.Vector3(0, 8, 8); // closer camera for portrait
+    private _portraitOffset = new THREE.Vector3(0, 8.5, 8.5); // closer camera for portrait
     private _landscapeOffset = new THREE.Vector3(0, 7, 4); // closer camera for landscape
     private _cameraTarget = new THREE.Vector3();
     private _cameraLookAt = new THREE.Vector3();
@@ -309,7 +309,7 @@ export default class MainScene {
             const position = obstacleConfig.position;
             obstacle.position.set(position.x, position.y, position.z);
             obstacle.visible = true;
-            obstacle.startLevel(obstacleConfig.movement, this._levelBoundsData, obstacleConfig.pulse);
+            obstacle.startLevel(obstacleConfig.movement, this._levelBoundsData);
             this._scene.add(obstacle);
             this._obstacles.push(obstacle);
         }

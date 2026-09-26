@@ -29,9 +29,9 @@ const levels: LevelConfig[] = [
             { x: 3.5, y: 2, z: 9.5 },
         ],
         obstacles: [
-            { position: { x: 1, y: 2, z: 3 }, pulse: { scale: 1.2, duration: 0.6 } },
-            { position: { x: -2.5, y: 2, z: 8 }, pulse: { scale: 1.2, duration: 0.6 } },
-            { position: { x: 5, y: 2, z: 6.5 }, pulse: { scale: 1.2, duration: 0.6 } },
+            { position: { x: 1, y: 2, z: 3 } },
+            { position: { x: -2.5, y: 2, z: 8 } },
+            { position: { x: 5, y: 2, z: 6.5 } },
         ],
         reward: { name: "Glasses", modelId: "glasses", boneId: "headfront", scale: 1, offset: { x: 0, y: 0, z: -0.33 }, rotation: { x: -89.5, y: 0, z: 0 } }, // glasses.glb is already lightweight (45KB, no textures); tune scale/offset/rotation in-engine to fit
     },
@@ -51,10 +51,10 @@ const levels: LevelConfig[] = [
             { x: 5.5, y: 2, z: 11.5 },
         ],
         obstacles: [
-            { position: { x: 1, y: 2, z: 2 }, movement: { axis: 'horizontal', distance: 2.5, speed: 1.5 }, pulse: { scale: 1.2, duration: 0.6 } },
-            { position: { x: -3, y: 2, z: 8 }, movement: { axis: 'horizontal', distance: 2.5, speed: 1.5 }, pulse: { scale: 1.2, duration: 0.6 } },
-            { position: { x: -6, y: 2, z: 6 }, movement: { axis: 'vertical', distance: 3, speed: 1.3 }, pulse: { scale: 1.2, duration: 0.6 } },
-            { position: { x: 5, y: 2, z: 6 }, movement: { axis: 'vertical', distance: 3, speed: 1.3 }, pulse: { scale: 1.2, duration: 0.6 } },
+            { position: { x: 1, y: 2, z: 2 }, movement: { axis: 'horizontal', distance: 2.5, speed: 1.5 }},
+            { position: { x: -3, y: 2, z: 8 }, movement: { axis: 'horizontal', distance: 2.5, speed: 1.5 } },
+            { position: { x: -6, y: 2, z: 6 }, movement: { axis: 'vertical', distance: 3, speed: 1.3 } },
+            { position: { x: 5, y: 2, z: 6 }, movement: { axis: 'vertical', distance: 3, speed: 1.3 } },
         ],
         reward: { name: "Hat", modelId: "hat", boneId: "headfront", scale: 0.25, offset: { x: 0, y: -0.4, z: -0.5 }, rotation: { x: -89.5, y: 0, z: 0 } }, // hat.glb's raw mesh is ~4 units across; tune scale/offset/rotation in-engine to fit
     },
@@ -76,12 +76,12 @@ const levels: LevelConfig[] = [
             { x: 1.5, y: 2, z: 1 },
         ],
         obstacles: [
-            { position: { x: 1, y: 2, z: 2 }, movement: { axis: 'horizontal', distance: 2.5, speed: 2 }, pulse: { scale: 1.2, duration: 0.6 } },
-            { position: { x: -3, y: 2, z: 8 }, movement: { axis: 'horizontal', distance: 2.5, speed: 2 }, pulse: { scale: 1.2, duration: 0.6 } },
-            { position: { x: -6, y: 2, z: 6 }, movement: { axis: 'vertical', distance: 3, speed: 1.8 }, pulse: { scale: 1.2, duration: 0.6 } },
-            { position: { x: 5, y: 2, z: 6 }, movement: { axis: 'vertical', distance: 3, speed: 1.8 }, pulse: { scale: 1.2, duration: 0.6 } },
-            { position: { x: 0, y: 2, z: 9 }, movement: { axis: 'circular', radius: 1.5, speed: 1.6 }, pulse: { scale: 1.2, duration: 0.6 } },
-            { position: { x: -1, y: 2, z: 2 }, movement: { axis: 'circular', radius: 1.5, speed: 1.6 }, pulse: { scale: 1.2, duration: 0.6 } },
+            { position: { x: 1, y: 2, z: 2 }, movement: { axis: 'horizontal', distance: 2.5, speed: 2 } },
+            { position: { x: -3, y: 2, z: 8 }, movement: { axis: 'horizontal', distance: 2.5, speed: 2 } },
+            { position: { x: -6, y: 2, z: 6 }, movement: { axis: 'vertical', distance: 3, speed: 1.8 } },
+            { position: { x: 5, y: 2, z: 6 }, movement: { axis: 'vertical', distance: 3, speed: 1.8 } },
+            { position: { x: 0, y: 2, z: 9 }, movement: { axis: 'circular', radius: 1.5, speed: 1.6 } },
+            { position: { x: -1, y: 2, z: 2 }, movement: { axis: 'circular', radius: 1.5, speed: 1.6 } },
         ],
         reward: null, // TODO: assign a distinct reward model once one exists; final screen shows a plain "Congratulations!" for now
     },

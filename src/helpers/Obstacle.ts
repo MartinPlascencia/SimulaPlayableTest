@@ -41,6 +41,7 @@ export default class Obstacle extends ModelAsset {
     private _bounds?: LevelBoundsData;
     private _initialScale: number = 0.8;
     private _pulseTween?: gsap.core.Tween;
+    private readonly _pulseConfig: ObstaclePulseConfig = { scale: 1.2, duration: 0.6 };
 
     constructor(originalModel: Group | Object3D, insideObjectName?: string, animationClips?: AnimationClip[]) {
         super(originalModel, insideObjectName, animationClips);
@@ -48,7 +49,7 @@ export default class Obstacle extends ModelAsset {
     }
 
     /** Called once the obstacle's spawn position is set, to (re)start its movement pattern for the level. */
-    public startLevel(movement?: ObstacleMovementConfig, bounds?: LevelBoundsData, pulse?: ObstaclePulseConfig): void {
+    public startLevel(movement?: ObstacleMovementConfig, bounds?: LevelBoundsData): void {
         this._basePosition.copy(this.position);
         this._previousPosition.copy(this.position);
         this._movement = movement;
@@ -56,7 +57,7 @@ export default class Obstacle extends ModelAsset {
         this._moveDirection = 1;
         this._moveOffset = 0;
         this._angle = 0;
-        this._startPulse(pulse);
+        this._startPulse();
     }
 
     /** Starts (or stops) the looping scale pulse. Kills any previous pulse tween first, since obstacles are
@@ -66,14 +67,14 @@ export default class Obstacle extends ModelAsset {
         this._pulseTween = undefined;
         this.scale.set(this._initialScale, this._initialScale, this._initialScale);
 
-        if (!pulse || pulse.duration <= 0) return;
+        if (this._pulseConfig.duration <= 0) return;
 
-        const peakScale = this._initialScale * pulse.scale;
+        const peakScale = this._initialScale * this._pulseConfig.scale;
         this._pulseTween = gsap.to(this.scale, {
             x: peakScale,
             y: peakScale,
             z: peakScale,
-            duration: pulse.duration,
+            duration: this._pulseConfig.duration,
             ease: 'sine.inOut',
             yoyo: true,
             repeat: -1,
