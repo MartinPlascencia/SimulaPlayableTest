@@ -80,7 +80,7 @@ export default class GameUI extends Container {
         const downloadButton = new DownloadButton();
         this.addChild(downloadButton);
         downloadButton.scaler.setPortraitScreenPosition(0.9, 0.06);
-        downloadButton.scaler.setPortraitScreenSize(0.2, 0.12);
+        downloadButton.scaler.setPortraitScreenSize(0.17, 0.12);
         downloadButton.scaler.setLandscapeScreenPosition(0.94, 0.1);
         downloadButton.scaler.setLandscapeScreenSize(0.2, 0.12);
         downloadButton.scaler.setOriginalSize(downloadButton.width, downloadButton.height);
