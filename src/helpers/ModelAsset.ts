@@ -1,4 +1,4 @@
-import { Object3D, Group, AnimationMixer, AnimationClip, AnimationAction, Mesh } from 'three';
+import { Object3D, Group, AnimationMixer, AnimationClip, AnimationAction, Mesh, LoopOnce, LoopRepeat } from 'three';
 import * as SkeletonUtils from 'three/examples/jsm/utils/SkeletonUtils.js';
 export default class ModelAsset extends Object3D {
     private _animationMixer?: AnimationMixer;
@@ -48,7 +48,7 @@ export default class ModelAsset extends Object3D {
         this.add(clonedModel);
     }
 
-    public playAnimation(animationName: string, fadeTime = 0.2): void {
+    public playAnimation(animationName: string, fadeTime = 0.2, loop = true): void {
         if (!this._animationMixer || !this._animationClips) {
             console.warn('No animation mixer or clips available for this model.');
             return;
@@ -64,6 +64,14 @@ export default class ModelAsset extends Object3D {
 
         if (this._currentAnimationAction === nextAction) {
             return; // already playing
+        }
+
+        if (loop) {
+            nextAction.setLoop(LoopRepeat, Infinity);
+            nextAction.clampWhenFinished = false;
+        } else {
+            nextAction.setLoop(LoopOnce, 1);
+            nextAction.clampWhenFinished = true;
         }
 
         nextAction.reset().setEffectiveWeight(1).fadeIn(fadeTime).play();

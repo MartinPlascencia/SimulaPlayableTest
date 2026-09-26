@@ -36,15 +36,21 @@ class Localization {
         return this._language;
     }
 
-    public get(key: string, language?:string): string {
+    public get(key: string, language?: string, params?: Record<string, string | number>): string {
         language = language || this._language;
         const languageData = this._languagesData[language];
-        if (languageData && key in languageData) {
-            return languageData[key];
-        } else {
+        if (!languageData || !(key in languageData)) {
             console.warn(`Translation for key "${key}" not found in language "${language}".`);
             return key;
         }
+
+        let text = languageData[key];
+        if (params) {
+            Object.keys(params).forEach(token => {
+                text = text.replace(new RegExp(`{${token}}`, 'g'), String(params[token]));
+            });
+        }
+        return text;
     }
 }
 

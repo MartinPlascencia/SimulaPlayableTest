@@ -29,6 +29,21 @@ export default class Arrow extends ModelAsset {
         this.animate();
     }
 
+    /** Hides the arrow immediately and stops its bob/spin animation, without waiting to run out of waypoints. */
+    public hide(): void {
+        this._stopAnimation();
+        this.visible = false;
+    }
+
+    /** Shows the arrow again pointing at a new target position (e.g. the reward chest once coins are complete),
+     *  bypassing the goPositions waypoint list. */
+    public show(position: Vector3): void {
+        this._stopAnimation();
+        this.position.copy(position);
+        this.visible = true;
+        this.animate();
+    }
+
     private _stopAnimation(): void {    
         if (this._animatingTween) {
             this._animatingTween.kill();

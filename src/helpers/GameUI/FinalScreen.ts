@@ -5,9 +5,14 @@ import { sdk } from '@smoud/playable-sdk';
 import PlaneBasicAnimations from "../../utils/PlaneBasicAnimations";
 import gsap from "gsap";
 import sound from "../../utils/Sound";
+import eventsSystem from "../../utils/EventsSystem";
+import localization from "../../utils/Localization";
 export default class FinalScreen extends ScaledContainer {
     private _continueButton!: Container;
-    private _secondsToContinue: number = 4;
+    private _continueButtonText!: Text;
+    private _finalText!: Text;
+    private _isLastLevel: boolean = true;
+    private _hasContinued: boolean = false;
     constructor() {
         super();
         this._createBackground();
@@ -22,8 +27,15 @@ export default class FinalScreen extends ScaledContainer {
         this.addChild(frame);
     }
 
-    public show(): void {
-        sdk.finish();
+    public show(isLastLevel: boolean = true, rewardName?: string | null): void {
+        this._isLastLevel = isLastLevel;
+        this._continueButtonText.text = isLastLevel ? 'Accept' : 'Next Level';
+        this._finalText.text = rewardName
+            ? localization.get('finalScreenWithReward', undefined, { reward: rewardName })
+            : localization.get('finalScreenNoReward');
+        if (isLastLevel) {
+            sdk.finish();
+        }
         sound.playSound("collect");
         this.alpha = 1;
         PlaneBasicAnimations.popObject(this);
@@ -34,9 +46,7 @@ export default class FinalScreen extends ScaledContainer {
             PlaneBasicAnimations.popObject(this._continueButton);
         });
 
-        gsap.delayedCall(this._secondsToContinue, () => {
-            sdk.install();
-        });
+        this._hasContinued = false;
     }
 
     public hide(): void {
@@ -44,28 +54,50 @@ export default class FinalScreen extends ScaledContainer {
         this.alpha = 0;
     }
 
+    /** Advances to the next level (or finishes/installs on the last level). Guarded against firing twice,
+     *  since the button-click animation delays the actual call and a fast double-tap could otherwise
+     *  trigger it twice. */
+    private _continue(): void {
+        if (this._hasContinued) return;
+        this._hasContinued = true;
+        if (this._isLastLevel) {
+            eventsSystem.emit('install');
+        } else {
+            eventsSystem.emit('nextLevel');
+        }
+    }
+
     private _createFinalText(): void {
-        const finalText = new Sprite(Assets.get('final_text'));
+        const finalText = new Text('Congratulations!', {
+            fontFamily: 'clear_sans',
+            fontSize: 36,
+            fill: 'white',
+            align: 'center',
+            wordWrap: true,
+            wordWrapWidth: 350,
+        });
         finalText.y = -75;
         finalText.anchor.set(0.5);
         this.addChild(finalText);
+        this._finalText = finalText;
     }
 
     private _createContinueButton(): void {
         const buttonWidth = 250;
         const buttonHeight = 70;
         const continueButton = new Container();
-        const buttonBackground = new Graphics().roundRect(-buttonWidth * 0.5, -buttonHeight * 0.5, buttonWidth, buttonHeight, 20).fill(0xd7fc51);
+        const buttonBackground = new Graphics().roundRect(-buttonWidth * 0.5, -buttonHeight * 0.5, buttonWidth, buttonHeight, 20).fill(0xF58324);
         continueButton.addChild(buttonBackground);
 
-        const buttonText = new Text('Активувати', {
+        const buttonText = new Text('Accept', {
             fontFamily: 'clear_sans',
             fontSize: 32,
-            fill: 'black',
+            fill: 'white',
             align: 'center'
         });
         buttonText.anchor.set(0.5);
         continueButton.addChild(buttonText);
+        this._continueButtonText = buttonText;
         continueButton.y = 75;
         continueButton.eventMode = 'static';
         continueButton.on('pointerdown', this._onContinueButtonClick.bind(this));
@@ -75,7 +107,7 @@ export default class FinalScreen extends ScaledContainer {
 
     private _onContinueButtonClick(): void {
         PlaneBasicAnimations.animateButton(this._continueButton, () => {
-            sdk.install();
+            this._continue();
         }, true);
     }
 }

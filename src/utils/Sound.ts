@@ -6,6 +6,8 @@ class Sound {
     private _active: boolean = true;
     private _volume: number = 1.0;
     private _currentSound : Howl | null = null;
+    private _pausedSounds: Howl[] = [];
+    private _isPaused: boolean = false;
 
     private constructor() {
         this._sounds = new Map();
@@ -73,8 +75,38 @@ class Sound {
         }
     }
 
+    /** Whether the given sound currently has an active (already started) playing instance. */
+    public isSoundPlaying(key: string): boolean {
+        return !!this._sounds.get(key)?.playing();
+    }
+
     public stopAllSounds(): void {
         Howler.stop();
+    }
+
+    /** Pauses every sound currently playing (e.g. looping music, sfx), remembering which ones to resume later.
+     *  Safe to call more than once in a row (e.g. blur + visibilitychange firing together). */
+    public pauseAll(): void {
+        if (this._isPaused) return;
+        this._isPaused = true;
+        this._pausedSounds = [];
+        this._sounds.forEach((sound) => {
+            if (sound.playing()) {
+                sound.pause();
+                this._pausedSounds.push(sound);
+            }
+        });
+    }
+
+    /** Resumes the sounds that were playing when `pauseAll()` was called. Skipped while sound is muted,
+     *  so regaining window focus while muted does not restart any sounds. */
+    public resumeAll(): void {
+        if (!this._isPaused) return;
+        this._isPaused = false;
+        if (this._active) {
+            this._pausedSounds.forEach((sound) => sound.play());
+        }
+        this._pausedSounds = [];
     }
 }
 

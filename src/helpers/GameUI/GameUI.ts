@@ -4,7 +4,11 @@ import TutorialHand from '../TutorialHand';
 import Joystick from './Joystick';
 import UITextContainer from '../UITextContainer';
 import FinalScreen from './FinalScreen';
+import LoseScreen from './LoseScreen';
 import HintText from './HintText';
+import DownloadButton from './DownloadButton';
+import SoundButton from './SoundButton';
+import InstallToast from './InstallToast';
 import gsap from 'gsap';
 
 import TextParticles from '../TextParticles';
@@ -15,24 +19,30 @@ export default class GameUI extends Container {
     private _tutorialHand!: TutorialHand;
     private _joystick!: Joystick;
     private _coinsTextContainer!: UITextContainer;
-    private _moneyTextContainer!: UITextContainer;
     private _finalScreen!: FinalScreen;
+    private _loseScreen!: LoseScreen;
     private _hintText!: HintText;
-    constructor(app: Application) {
+    private _downloadButton!: DownloadButton;
+    private _soundButton!: SoundButton;
+    private _installToast!: InstallToast;
+    constructor(app: Application, coinsToWin: number) {
         super();
         app.stage.addChild(this);
         this._createCoinsUI();
-        this._createMoneyUI();
         this._createTextParticles(app);
-        this._createHintText();
+        this._createHintText(coinsToWin);
         this._createJoystick(app);
         this._createFinalScreen();
+        this._createLoseScreen();
+        this._createDownloadButton();
+        this._createSoundButton();
+        this._createInstallToast();
         this.resize(app.screen.width, app.screen.height);
         this._addEvents();
     }
     
-    private _createHintText(): void {
-        const hintText = new HintText();
+    private _createHintText(coinsToWin: number): void {
+        const hintText = new HintText({ count: coinsToWin });
         hintText.scaler.setPortraitScreenPosition(0.5, 0.16);
         hintText.scaler.setPortraitScreenSize(0.6, 0.1);
         hintText.scaler.setLandscapeScreenPosition(0.5, 0.15);
@@ -54,22 +64,54 @@ export default class GameUI extends Container {
         finalScreen.hide();
     }
 
+    private _createLoseScreen(): void {
+        const loseScreen = new LoseScreen();
+        this.addChild(loseScreen);
+        loseScreen.scaler.setPortraitScreenPosition(0.5, 0.5);
+        loseScreen.scaler.setLandscapeScreenPosition(0.5, 0.5);
+        loseScreen.scaler.setPortraitScreenSize(0.8, 0.8);
+        loseScreen.scaler.setLandscapeScreenSize(0.6, 0.6);
+        loseScreen.scaler.setOriginalSize(loseScreen.width, loseScreen.height);
+        this._loseScreen = loseScreen;
+        loseScreen.hide();
+    }
+
+    private _createDownloadButton(): void {
+        const downloadButton = new DownloadButton();
+        this.addChild(downloadButton);
+        downloadButton.scaler.setPortraitScreenPosition(0.9, 0.06);
+        downloadButton.scaler.setPortraitScreenSize(0.2, 0.12);
+        downloadButton.scaler.setLandscapeScreenPosition(0.94, 0.1);
+        downloadButton.scaler.setLandscapeScreenSize(0.2, 0.12);
+        downloadButton.scaler.setOriginalSize(downloadButton.width, downloadButton.height);
+        this._downloadButton = downloadButton;
+    }
+
+    private _createSoundButton(): void {
+        const soundButton = new SoundButton();
+        this.addChild(soundButton);
+        soundButton.scaler.setPortraitScreenPosition(0.9, 0.94);
+        soundButton.scaler.setPortraitScreenSize(0.14, 0.08);
+        soundButton.scaler.setLandscapeScreenPosition(0.94, 0.88);
+        soundButton.scaler.setLandscapeScreenSize(0.1, 0.1);
+        soundButton.scaler.setOriginalSize(soundButton.width, soundButton.height);
+        this._soundButton = soundButton;
+    }
+
+    private _createInstallToast(): void {
+        const installToast = new InstallToast();
+        this.addChild(installToast);
+        installToast.scaler.setPortraitScreenPosition(0.5, 0.94);
+        installToast.scaler.setPortraitScreenSize(0.6, 0.08);
+        installToast.scaler.setLandscapeScreenPosition(0.5, 0.92);
+        installToast.scaler.setLandscapeScreenSize(0.5, 0.12);
+        installToast.scaler.setOriginalSize(installToast.width, installToast.height);
+        this._installToast = installToast;
+    }
+
     private _createTextParticles(app: Application): void {
         new TextParticles(this);
     }
-
-    private _createMoneyUI(): void {
-        const moneyContainer = new UITextContainer();
-        this.addChild(moneyContainer);
-        this._moneyTextContainer = moneyContainer;
-        moneyContainer.setIcon('money');
-        moneyContainer.scaler.setPortraitScreenPosition(0.8, 0.05);
-        moneyContainer.scaler.setPortraitScreenSize(0.3, 0.1);
-        moneyContainer.scaler.setLandscapeScreenPosition(0.88, 0.1);
-        moneyContainer.scaler.setLandscapeScreenSize(0.2, 0.1);
-        moneyContainer.scaler.setOriginalSize(moneyContainer.width, moneyContainer.height);
-        moneyContainer.setText(`$ 0`);
-    }   
 
     public get joystick(): Joystick {
         return this._joystick;
@@ -108,21 +150,36 @@ export default class GameUI extends Container {
 
     private _addEvents(): void {
         eventsSystem.on('coinCollected', this._updateCoinsUI.bind(this));
-        eventsSystem.on('moneyChanged', this._updateMoneyUI.bind(this));
         eventsSystem.on('gameFinished', this._onGameFinished.bind(this));
+        eventsSystem.on('showLoseScreen', this._onGameLost.bind(this));
         eventsSystem.on('nextHint', this._hintText.goToNextHint.bind(this._hintText));
+        eventsSystem.on('install', this._onInstall.bind(this));
     }
 
-    private _onGameFinished(): void {
-        this._finalScreen.show();
+    private _onInstall(): void {
+        this._installToast.show();
+    }
+
+    private _onGameFinished(isLastLevel: boolean, rewardName: string | null): void {
+        this._finalScreen.show(isLastLevel, rewardName);
         this._joystick.eventMode = 'none';
+        this._joystick.reset();
     }
 
-    private _updateMoneyUI(money: number): void {
-        this._moneyTextContainer.setText(`$ ${money}`);
-        gsap.killTweensOf(this._moneyTextContainer);
-        this._moneyTextContainer.scaler.resize(window.innerWidth, window.innerHeight);
-        PlaneBasicAnimations.wiggleObject(this._moneyTextContainer, 0.1);
+    private _onGameLost(): void {
+        this._loseScreen.show();
+        this._hintText.hide();
+        this._joystick.eventMode = 'none';
+        this._joystick.reset();
+    }
+
+    /** Resets the UI back to a fresh level state (final/lose screens hidden, hints restarted, joystick usable). */
+    public startLevel(coinsToWin: number): void {
+        this._finalScreen.hide();
+        this._loseScreen.hide();
+        this._joystick.eventMode = 'static';
+        this._joystick.reset();
+        this._hintText.reset({ count: coinsToWin });
     }
 
     private _updateCoinsUI(coins: number, maxCoins: number): void {
@@ -134,9 +191,12 @@ export default class GameUI extends Container {
 
     public resize(width: number, height: number): void {
         this._coinsTextContainer.scaler.resize(width, height);
-        this._moneyTextContainer.scaler.resize(width, height);
         this._joystick.resize(width, height);
         this._finalScreen.scaler.resize(width, height);
+        this._loseScreen.scaler.resize(width, height);
         this._hintText.scaler.resize(width, height);
+        this._downloadButton.scaler.resize(width, height);
+        this._soundButton.scaler.resize(width, height);
+        this._installToast.scaler.resize(width, height);
     }  
 }

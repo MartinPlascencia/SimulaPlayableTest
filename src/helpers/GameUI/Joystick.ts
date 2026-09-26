@@ -47,9 +47,11 @@ export default class Joystick extends Container {
 
         this._base = new Sprite(Assets.get(options.baseId));
         this._base.anchor.set(0.5);
+        this._base.tint = 0x6EC6FF;
 
         this._handle = new Sprite(Assets.get(options.handleId));
         this._handle.anchor.set(0.5);
+        this._handle.tint = 0x6EC6FF;
 
         this._visuals.addChild(this._base, this._handle);
         this.addChild(this._visuals);
@@ -131,6 +133,18 @@ export default class Joystick extends Container {
             duration: 0.25,
             ease: 'power3.out'
         });
+    }
+
+    /** Forcibly clears any in-progress drag (e.g. when input is disabled without a matching pointerup). */
+    public reset(): void {
+        this._dragging = false;
+        this._pointerId = null;
+        this.value.set(0, 0);
+        gsap.killTweensOf(this._handle.position);
+        gsap.killTweensOf(this._visuals);
+        this._handle.position.set(0, 0);
+        this._visuals.alpha = 0;
+        this._visuals.visible = false;
     }
 
     public resize(screenWidth: number, screenHeight: number): void {

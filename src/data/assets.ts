@@ -14,23 +14,24 @@ export default {
                 { alias: "joystick_handler", src: "sprites/joystick_handler.webp" },
                 { alias: "lolipop_icon", src: "sprites/lolipop.webp" },
                 { alias: "chip", src: "sprites/chip.webp" },
-                { alias: "coin", src: "sprites/coin.webp" },
-                { alias: "money", src: "sprites/money.webp" },
                 { alias: "final_text", src: "sprites/final_text.png" },
                 { alias: "hints_background", src: "sprites/hints_background.png" },
-                { alias: "logo", src: "sprites/logo.png" }
+                { alias: "logo", src: "sprites/logo.png" },
+                { alias: "download", src: "sprites/download.webp" },
+                { alias: "sound_on", src: "sprites/sound_on.webp" },
+                { alias: "sound_off", src: "sprites/sound_off.webp" }
             ]
         }
     ],
     models: [
-        { alias: "gorilla_animated", src: "models/monkey_animated.glb" },
-        { alias: "gem", src: "models/gem.glb" },
-        { alias: "bone", src: "models/bone.glb" },
-        { alias: "lolipop", src: "models/lolipop.glb" },
-        { alias: "slot_machine", src: "models/slotmachine.glb" },
+        { alias: "fox_animated", src: "models/fox.glb" },
+        { alias: "scrambly_coin", src: "models/scrambly_coin.glb" },
+        { alias: "chest", src: "models/chest.glb" },
         { alias: "arrow", src: "models/arrow.glb" },
         { alias: "coin", src: "models/coin.glb" },
-        { alias: "gorilla_logo", src: "models/gorilla_logo.glb" }
+        { alias: "enemy_blob", src: "models/enemy_blob.glb" },
+        { alias: "hat", src: "models/hat.glb" },
+        { alias: "glasses", src: "models/glasses.glb" }
 
     ],
     fonts: [
@@ -38,11 +39,12 @@ export default {
     ],
     sounds: [
         { alias: "collect", src: "sounds/collect.mp3" },
-        { alias: "congratulations", src: "sounds/congratulations.mp3" },
+        { alias: "victory", src: "sounds/victory.mp3" },
         { alias: "exchange", src: "sounds/exchange.mp3" },
+        { alias: "lose", src: "sounds/lose.mp3" },
         { alias: "snow_step_1", src: "sounds/snow_step_1.mp3" },
         { alias: "snow_step_2", src: "sounds/snow_step_2.mp3" },
-        { alias: "gorilla_game_song", src: "sounds/gorilla_game_song.mp3" }
+        { alias: "game_sound", src: "sounds/game_music.mp3" }
     ],
     textures: [
         { alias: "smoke", src: "textures/smoke.png" },

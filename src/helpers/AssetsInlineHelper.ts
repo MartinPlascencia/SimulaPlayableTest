@@ -129,7 +129,7 @@ export default class AssetsInlineHelper {
             const font = new FontFace(name, `url(${url})`);
             await font.load();
             document.fonts.add(font);
-            console.log(`Font "${name}" loaded`);
+            //console.log(`Font "${name}" loaded`);
         } catch (error) {
             console.error(`Error loading font "${name}" from "${url}"`, error);
             throw error;
@@ -143,7 +143,7 @@ export default class AssetsInlineHelper {
                 this._textures[texture.alias] = loadingTexture;
                 loadingTexture.flipY = false;
                 loadingTexture.needsUpdate = true;
-                console.log(`Texture "${texture.alias}" loaded`);
+                //console.log(`Texture "${texture.alias}" loaded`);
             }
             catch (error) {
                 console.error(`Error loading texture "${texture.alias}" from "${texture.src}"`, error);
@@ -171,7 +171,7 @@ export default class AssetsInlineHelper {
                     );
                 });
 
-                console.log(`Animations for model "${alias}":`, gltf.animations);
+                //console.log(`Animations for model "${alias}":`, gltf.animations);
 
                 this._models[alias] = {
                     model: gltf.scene,

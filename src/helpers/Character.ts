@@ -1,17 +1,15 @@
 import ModelAsset from "./ModelAsset";
-import Money from "./Money";
 import CoinsCollector from "./CoinsCollector";
 import { Group, Object3D, AnimationClip, Vector3, Bone } from "three";
 
 import sound from "../utils/Sound";
 import gsap from "gsap";
 export default class Character extends ModelAsset {
-    private _speed: number = 2.5;
+    private _speed: number = 3;
     private _timeBetweenSteps: number = 0.35;
     private _isWalking: boolean = false;
     private _direction: Vector3 = new Vector3();
     private _coinsCollector: CoinsCollector = new CoinsCollector();
-    private _money: Money = new Money();
     constructor(originalModel: Group | Object3D, insideObjectName?: string, animationClips?: AnimationClip[]) {
         super(originalModel, insideObjectName, animationClips);
     }
@@ -22,10 +20,6 @@ export default class Character extends ModelAsset {
                 console.log('Bone:', obj.name);
             }
         });
-    }
-
-    public get money(): Money {
-        return this._money;
     }
 
     private _normalizeAngle(angle: number): number {
@@ -41,7 +35,7 @@ export default class Character extends ModelAsset {
 
         if (!this._isWalking) {
             this._isWalking = true;
-            this.playAnimation('run');
+            this.playAnimation('Running');
             this._playWalkingSound();
         }
 
@@ -67,8 +61,21 @@ export default class Character extends ModelAsset {
     public stop(): void {
         if (this._isWalking) {
             this._isWalking = false;
-            this.playAnimation('look');
+            this.playAnimation('Idle_3');
         }
+    }
+
+    /** Stops the looping footstep sound without forcing an idle animation - used when the character
+     *  dies, since death plays its own animation (e.g. 'dying_backwards') instead of idle. */
+    public stopWalkingSound(): void {
+        this._isWalking = false;
+    }
+
+    /** Forces the character back to its idle state, regardless of whatever it was doing before
+     *  (e.g. mid-walk, dying). Used when repositioning the character for a fresh/restarted level. */
+    public resetToIdle(): void {
+        this._isWalking = false;
+        this.playAnimation('Idle_3');
     }
 
 }

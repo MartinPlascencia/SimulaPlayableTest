@@ -54,4 +54,10 @@ export default class CoinsSender {
         }
     }
 
+    /** Removes all pooled flying-coin models from the scene, used when restarting into a new level. */
+    public dispose(): void {
+        this._coins.forEach(coin => this._scene.remove(coin));
+        this._coins = [];
+    }
+
 }
