@@ -18,7 +18,7 @@ import { LevelConfig } from '../types/game';
 // Add more entries here to add more levels; LevelManager walks through them
 // in order.
 const levels: LevelConfig[] = [
-    /* {
+    {
         coinsToWin: 5,
         startPosition: { x: 2.2, z: 8 },
         coinsPositions: [
@@ -34,7 +34,7 @@ const levels: LevelConfig[] = [
             { position: { x: 5, y: 2, z: 6.5 }, pulse: { scale: 1.2, duration: 0.6 } },
         ],
         reward: { name: "Glasses", modelId: "glasses", boneId: "headfront", scale: 1, offset: { x: 0, y: 0, z: -0.33 }, rotation: { x: -89.5, y: 0, z: 0 } }, // glasses.glb is already lightweight (45KB, no textures); tune scale/offset/rotation in-engine to fit
-    }, */
+    },
     {
         coinsToWin: 10,
         startPosition: { x: 2.2, z: 8 },
