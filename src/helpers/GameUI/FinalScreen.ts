@@ -27,12 +27,12 @@ export default class FinalScreen extends ScaledContainer {
         this.addChild(frame);
     }
 
-    public show(isLastLevel: boolean = true, rewardName?: string | null): void {
+    /** `finalScreenMessageKey` is an optional localization key from the level config (e.g.
+     *  "finalScreenBewareMoving") that overrides the default reward/"Congratulations!" text. */
+    public show(isLastLevel: boolean = true, rewardName?: string | null, finalScreenMessageKey?: string | null): void {
         this._isLastLevel = isLastLevel;
         this._continueButtonText.text = isLastLevel ? 'Accept' : 'Next Level';
-        this._finalText.text = rewardName
-            ? localization.get('finalScreenWithReward', undefined, { reward: rewardName })
-            : localization.get('finalScreenNoReward');
+        this._finalText.text = this._getFinalText(finalScreenMessageKey, rewardName);
         if (isLastLevel) {
             sdk.finish();
         }
@@ -52,6 +52,17 @@ export default class FinalScreen extends ScaledContainer {
     public hide(): void {
         this.eventMode = 'none';
         this.alpha = 0;
+    }
+
+    /** Uses the level's configured final-screen message key if set, falling back to the
+     *  reward/"Congratulations!" text for levels without one. */
+    private _getFinalText(finalScreenMessageKey?: string | null, rewardName?: string | null): string {
+        if (finalScreenMessageKey) {
+            return localization.get(finalScreenMessageKey, undefined, { reward: rewardName ?? '' });
+        }
+        return rewardName
+            ? localization.get('finalScreenWithReward', undefined, { reward: rewardName })
+            : localization.get('finalScreenNoReward');
     }
 
     /** Advances to the next level (or finishes/installs on the last level). Guarded against firing twice,
@@ -89,7 +100,7 @@ export default class FinalScreen extends ScaledContainer {
         const buttonBackground = new Graphics().roundRect(-buttonWidth * 0.5, -buttonHeight * 0.5, buttonWidth, buttonHeight, 20).fill(0xF58324);
         continueButton.addChild(buttonBackground);
 
-        const buttonText = new Text('Accept', {
+        const buttonText = new Text('Lets go!', {
             fontFamily: 'clear_sans',
             fontSize: 32,
             fill: 'white',

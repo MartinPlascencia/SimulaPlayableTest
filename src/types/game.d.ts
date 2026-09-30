@@ -134,6 +134,9 @@ type LevelConfig = {
     obstacles: ObstacleConfig[],
     /** Optional; omit or set to null for levels with no reward (final screen shows a plain "Congratulations!"). */
     reward?: RewardConfig | null,
+    /** Optional localization key for the final/win screen text shown after completing this level
+     *  (e.g. "finalScreenBewareMoving"). Overrides the default reward/"Congratulations!" text when set. */
+    finalScreenMessageKey?: string,
 }
 
 export { ButtonsConfig, UIAssetConfig, AddButtonConfig, CategoryMenuConfig, CategoryButtonConfig, AssetMenuConfig, 

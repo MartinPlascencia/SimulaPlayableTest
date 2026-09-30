@@ -19,7 +19,8 @@ export default {
                 { alias: "logo", src: "sprites/logo.png" },
                 { alias: "download", src: "sprites/download.webp" },
                 { alias: "sound_on", src: "sprites/sound_on.webp" },
-                { alias: "sound_off", src: "sprites/sound_off.webp" }
+                { alias: "sound_off", src: "sprites/sound_off.webp" },
+                { alias: "hand", src: "sprites/hand.webp" }
             ]
         }
     ],

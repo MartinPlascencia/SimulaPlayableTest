@@ -17,6 +17,11 @@ import PlaneBasicAnimations from '../../utils/PlaneBasicAnimations';
 
 export default class GameUI extends Container {
     private _tutorialHand!: TutorialHand;
+    private _tutorialHandTargetA!: Container;
+    private _tutorialHandTargetB!: Container;
+    private _isFirstLevel: boolean = true;
+    private _hasShownMoveHint: boolean = false;
+    private _awaitingMove: boolean = false;
     private _joystick!: Joystick;
     private _coinsTextContainer!: UITextContainer;
     private _finalScreen!: FinalScreen;
@@ -32,6 +37,7 @@ export default class GameUI extends Container {
         this._createTextParticles(app);
         this._createHintText(coinsToWin);
         this._createJoystick(app);
+        this._createTutorialHand();
         this._createFinalScreen();
         this._createLoseScreen();
         this._createDownloadButton();
@@ -139,6 +145,9 @@ export default class GameUI extends Container {
             portraitSize: { width: 0.4, height: 0.2 },
             landscapeSize: { width: 0.35, height: 0.3 }
         }, app.screen.width, app.screen.height);
+        // Starts disabled so the very first level's intro camera pan can't be interrupted by a
+        // drag - re-enabled by _onNextHint() once the pan finishes (see startLevel() for later levels).
+        joystick.eventMode = 'none';
         this.addChild(joystick);
         this._joystick = joystick;
     }
@@ -146,24 +155,65 @@ export default class GameUI extends Container {
     private _createTutorialHand(): void {
         this._tutorialHand = new TutorialHand('hand');
         this.addChild(this._tutorialHand);
+        // Default on-screen size (fraction of screen width/height, kept uniform via the min-axis
+        // scaling in Scaler.resize) - tweak here if the hand looks too big/small while swiping
+        // between the drag-gesture markers below.
+        this._tutorialHand.scaler.setPortraitScreenSize(0.25, 0.25);
+        this._tutorialHand.scaler.setLandscapeScreenSize(0.15, 0.2);
+        this._tutorialHand.scaler.setOriginalSize(this._tutorialHand.width, this._tutorialHand.height);
+
+        // Two nearby markers (not visible themselves) the hand swipes between, to mime a
+        // drag gesture roughly where the joystick appears, hinting how to move the character.
+        this._tutorialHandTargetA = new Container();
+        this._tutorialHandTargetB = new Container();
+        this.addChild(this._tutorialHandTargetA, this._tutorialHandTargetB);
     }
 
     private _addEvents(): void {
         eventsSystem.on('coinCollected', this._updateCoinsUI.bind(this));
         eventsSystem.on('gameFinished', this._onGameFinished.bind(this));
         eventsSystem.on('showLoseScreen', this._onGameLost.bind(this));
-        eventsSystem.on('nextHint', this._hintText.goToNextHint.bind(this._hintText));
+        eventsSystem.on('nextHint', this._onNextHint.bind(this));
         eventsSystem.on('install', this._onInstall.bind(this));
+        eventsSystem.on('joystickDragStart', this._onJoystickDragStart.bind(this));
+    }
+
+    private _onNextHint(): void {
+        // 'nextHint' fires first right when the intro camera pan finishes - re-enable the
+        // joystick here so it can't be dragged mid-pan (it's disabled in startLevel()).
+        this._joystick.eventMode = 'static';
+
+        // On the very first level, intercept the first 'nextHint' (fired once the intro
+        // camera pan finishes) to show the move tutorial instead of the usual "collect
+        // tokens" hint. The normal hint sequence only resumes once the player actually
+        // drags the joystick (see _onJoystickDragStart), so it isn't skipped.
+        if (this._isFirstLevel && !this._hasShownMoveHint) {
+            this._hasShownMoveHint = true;
+            this._awaitingMove = true;
+            this._hintText.showMoveHint();
+            this._tutorialHand.showTutorialObjects([this._tutorialHandTargetA, this._tutorialHandTargetB], 0.3);
+            return;
+        }
+        this._hintText.goToNextHint();
+    }
+
+    private _onJoystickDragStart(): void {
+        this._tutorialHand.cancelTutorial();
+        if (this._awaitingMove) {
+            this._awaitingMove = false;
+            this._hintText.goToNextHint();
+        }
     }
 
     private _onInstall(): void {
         this._installToast.show();
     }
 
-    private _onGameFinished(isLastLevel: boolean, rewardName: string | null): void {
-        this._finalScreen.show(isLastLevel, rewardName);
+    private _onGameFinished(isLastLevel: boolean, rewardName: string | null, finalScreenMessageKey: string | null): void {
+        this._finalScreen.show(isLastLevel, rewardName, finalScreenMessageKey);
         this._joystick.eventMode = 'none';
         this._joystick.reset();
+        this._tutorialHand.cancelTutorial();
     }
 
     private _onGameLost(): void {
@@ -171,19 +221,28 @@ export default class GameUI extends Container {
         this._hintText.hide();
         this._joystick.eventMode = 'none';
         this._joystick.reset();
+        this._tutorialHand.cancelTutorial();
     }
 
-    /** Resets the UI back to a fresh level state (final/lose screens hidden, hints restarted, joystick usable). */
-    public startLevel(coinsToWin: number): void {
+    /** Resets the UI back to a fresh level state (final/lose screens hidden, hints restarted, joystick usable).
+     *  `isFirstLevel` controls whether the move tutorial (hand + "Touch/Click and drag" hint) plays again -
+     *  only the very first level (or a restart of it) should show it. The joystick starts disabled here and
+     *  is re-enabled by _onNextHint() once the intro camera pan finishes, so it can't be dragged mid-pan. */
+    public startLevel(coinsToWin: number, isFirstLevel: boolean = false): void {
         this._finalScreen.hide();
         this._loseScreen.hide();
-        this._joystick.eventMode = 'static';
+        this._joystick.eventMode = 'none';
         this._joystick.reset();
         this._hintText.reset({ count: coinsToWin });
+        this._tutorialHand.cancelTutorial();
+        this._isFirstLevel = isFirstLevel;
+        this._hasShownMoveHint = false;
+        this._awaitingMove = false;
     }
 
     private _updateCoinsUI(coins: number, maxCoins: number): void {
         this._coinsTextContainer.setText(`${coins} / ${maxCoins}`);
+        this._coinsTextContainer.setProgress(coins, maxCoins);
         gsap.killTweensOf(this._coinsTextContainer);
         this._coinsTextContainer.scaler.resize(window.innerWidth, window.innerHeight);
         PlaneBasicAnimations.wiggleObject(this._coinsTextContainer, 0.1);
@@ -198,5 +257,8 @@ export default class GameUI extends Container {
         this._downloadButton.scaler.resize(width, height);
         this._soundButton.scaler.resize(width, height);
         this._installToast.scaler.resize(width, height);
+        this._tutorialHand.scaler.resize(width, height);
+        this._tutorialHandTargetA.position.set(width * 0.5, height * 0.62);
+        this._tutorialHandTargetB.position.set(width * 0.62, height * 0.5);
     }  
 }

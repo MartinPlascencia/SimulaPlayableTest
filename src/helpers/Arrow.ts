@@ -1,6 +1,9 @@
 import ModelAsset from "./ModelAsset";
 import { Group, Object3D, AnimationClip, Vector3 } from "three";
 import gsap from "gsap";
+/** Points at level objectives (e.g. the next coin) by hovering above a list of waypoints,
+ *  bobbing/spinning in place. For the arrow that follows the player and points at the reward
+ *  chest, see CompassArrow. */
 export default class Arrow extends ModelAsset {
     private _goPositions: Vector3[] = [];
     private _positionIndex: number = 0;

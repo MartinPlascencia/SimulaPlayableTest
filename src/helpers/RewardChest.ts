@@ -17,8 +17,8 @@ export default class RewardChest extends UpdgradeAsset {
         this.add(this._chestModel);
     }
 
-    public finishGame(isLastLevel: boolean, rewardName?: string | null): void {
-        eventsSystem.emit('gameFinished', isLastLevel, rewardName ?? null);
+    public finishGame(isLastLevel: boolean, rewardName?: string | null, finalScreenMessageKey?: string): void {
+        eventsSystem.emit('gameFinished', isLastLevel, rewardName ?? null, finalScreenMessageKey ?? null);
     }
 
     public get coinsToWin(): number {

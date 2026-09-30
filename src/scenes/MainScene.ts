@@ -1,4 +1,4 @@
-import { Application} from 'pixi.js';
+import { Application } from 'pixi.js';
 import { sdk } from '@smoud/playable-sdk';
 import * as THREE from 'three';
 import AssetsInlineHelper from '../helpers/AssetsInlineHelper';
@@ -15,6 +15,7 @@ import CoinsCollector from '../helpers/CoinsCollector';
 import RewardChest from '../helpers/RewardChest';
 import Character from '../helpers/Character';
 import Arrow from '../helpers/Arrow';
+import CompassArrow from '../helpers/CompassArrow';
 import CoinsSender from '../helpers/CoinsSender';
 import LevelManager from '../helpers/LevelManager';
 import Obstacle from '../helpers/Obstacle';
@@ -54,6 +55,7 @@ export default class MainScene {
     private _obstacles: Obstacle[] = [];
     private _obstaclePool: Obstacle[] = [];
     private _arrow!: Arrow;
+    private _compassArrow!: CompassArrow;
     private _boundaryManager!: BoundaryManager;
     private _levelWalls!: LevelWalls;
     private _itemsData: ItemsData = items;
@@ -93,7 +95,7 @@ export default class MainScene {
         this._renderer.domElement.style.position = "absolute";
         this._renderer.domElement.style.top = "0";
         this._renderer.domElement.style.left = "0";
-        this._renderer.domElement.style.zIndex = "0"; 
+        this._renderer.domElement.style.zIndex = "0";
         this._renderer.domElement.style.pointerEvents = "none";
 
         pixiCanvas.style.position = "absolute";
@@ -127,13 +129,13 @@ export default class MainScene {
         this._levelManager.goToNextLevel();
         this._clearLevel();
         this._buildLevel();
-        this._gameUI.startLevel(this._currentLevel.coinsToWin);
+        this._gameUI.startLevel(this._currentLevel.coinsToWin, this._levelManager.currentIndex === 0);
     }
 
     private _restartCurrentLevel(): void {
         this._clearLevel();
         this._buildLevel();
-        this._gameUI.startLevel(this._currentLevel.coinsToWin);
+        this._gameUI.startLevel(this._currentLevel.coinsToWin, this._levelManager.currentIndex === 0);
     }
 
     private _createLights(): void {
@@ -374,6 +376,7 @@ export default class MainScene {
 
         this._scene.remove(this._rewardChest);
         this._scene.remove(this._arrow);
+        this._scene.remove(this._compassArrow);
         this._scene.remove(this._levelWalls);
         this._coinsSender.dispose();
     }
@@ -414,6 +417,11 @@ export default class MainScene {
             : [];
 
         this._scene.add(this._arrow);
+
+        this._compassArrow = new CompassArrow(this._assetsInlineHelper.models['arrow'].model, 'Arrow');
+        this._compassArrow.scale.set(0.5, 0.5, 0.5);
+        this._compassArrow.visible = false;
+        this._scene.add(this._compassArrow);
     }
 
     private async _animateScene(): Promise<void> {
@@ -421,9 +429,9 @@ export default class MainScene {
         this._setDayLight(2);
         const initialPosition = this._characterModel.position.clone().add(this._cameraOffset);
         this._camera.position.set(initialPosition.x, initialPosition.y, initialPosition.z);
-        await gsap.from(this._camera.position,{
-            y:30,
-            duration: 3.5,
+        await gsap.from(this._camera.position, {
+            y: 30,
+            duration: 2.5,
             ease: "power2.out",
             onUpdate: () => {
                 this._cameraLookAt.lerp(
@@ -494,7 +502,7 @@ export default class MainScene {
             if (coin.visible) {
                 coin.rotate(delta);
                 if (coin.isInGrabRange(this._characterModel) && this._coinsCollector.coins < this._coinsCollector.maxCoins) {
-                    sound.playSound('collect',false, 0.7);
+                    sound.playSound('collect', false, 0.7);
                     eventsSystem.emit('showTextParticles', `±1 ${localization.get('addItem')}`, this._characterModel, this._camera, this._renderer, 45);
                     this._coinsCollector.collectCoin();
                     coin.visible = false;
@@ -504,11 +512,12 @@ export default class MainScene {
                     }
                     if (this._coinsCollector.coins == this._rewardChest.coinsToWin) {
                         eventsSystem.emit('nextHint');
-                        this._arrow.show(this._rewardChest.position.clone().add(new THREE.Vector3(0, 1, 1)));
+                        this._compassArrow.showAboveCharacter(this._characterModel, this._rewardChest.position, 2.5);
                     }
                 }
             }
         })
+        this._compassArrow.updateFollow();
         this._checkObstacles(delta);
         this._checkRewardChest(delta);
         this._updateCameraFollow();
@@ -544,16 +553,16 @@ export default class MainScene {
         if (this._rewardChest.isInUpgradeRange(this._characterModel) && this._coinsCollector.coins >= this._rewardChest.coinsToWin) {
             this._coinsCollector.coins = 0;
             eventsSystem.emit('nextHint');
-            this._arrow.hide();
+            this._compassArrow.hide();
             sound.playSound('exchange');
             sound.playSound('victory');
             eventsSystem.emit('showTextParticles', localization.get('completed'), this._characterModel, this._camera, this._renderer);
             this._splashParticles.play(this._rewardChest.position);
-            this._coinsSender.sendCoins(this._characterModel.position, this._rewardChest.position,  10, 0.5);
+            this._coinsSender.sendCoins(this._characterModel.position, this._rewardChest.position, 10, 0.5);
             this._characterModel.stop();
             gsap.delayedCall(2, () => {
                 this._rewardManager.attachReward(this._currentLevel.reward, this._characterModel);
-                this._rewardChest.finishGame(this._levelManager.isLastLevel, this._currentLevel.reward?.name);
+                this._rewardChest.finishGame(this._levelManager.isLastLevel, this._currentLevel.reward?.name, this._currentLevel.finalScreenMessageKey);
             });
         }
     }
@@ -599,8 +608,8 @@ export default class MainScene {
 
     private _updateCameraPosition(width: number, height: number): void {
         this._camera.aspect = width / height;
-        const minDistance = 8;  
-        const maxDistance = 18; 
+        const minDistance = 8;
+        const maxDistance = 18;
 
         const normalizedWidth = Math.min(Math.max((width - 400) / 1200, 0), 1);
         const distance = maxDistance - (maxDistance - minDistance) * normalizedWidth;

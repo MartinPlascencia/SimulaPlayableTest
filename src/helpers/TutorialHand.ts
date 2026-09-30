@@ -1,17 +1,30 @@
-import { Sprite, Assets, Container, Point } from 'pixi.js';
+import { Sprite, Assets, Container } from 'pixi.js';
 import gsap from 'gsap';
+import ScaledSprite from './Scale/ScaledSprite';
 
-export default class TutorialHand extends Sprite {
+/* ---------------------------------------------------
+   TUTORIAL HAND
+
+   Drag-gesture hint sprite ('hand' texture) that moves between
+   a list of target objects, wiggling (scale pulse) at each one,
+   looping until cancelTutorial() is called. Uses the same
+   Scaler pattern as the rest of GameUI (see ScaledSprite) for
+   its size, since the hand itself doesn't move via scaler screen
+   positions - its position is driven by showTutorialObjects()/
+   gsap instead, so scaler.ignorePosition is set. Configure its
+   on-screen size via `scaler.setPortraitScreenSize`/
+   `setLandscapeScreenSize` from the creating code (see GameUI).
+--------------------------------------------------- */
+export default class TutorialHand extends ScaledSprite {
     private _running = false;
     private _animationSpeed = 1;
     private _scaleFactor = 1.2;
-    private _portraitScale = 0.6;
-    private _landscapeScale = 0.9;
 
     constructor(texture: string) {
         super(Assets.get(texture));
         this.anchor.set(0.1);
         this.alpha = 0;
+        this.scaler.ignorePosition = true;
     }
 
     public get running(): boolean {
@@ -75,8 +88,5 @@ export default class TutorialHand extends Sprite {
             repeat: 1
         });
     }
-
-    public resize(width: number, height: number): void {
-        width > height ? this.scale.set(this._landscapeScale) : this.scale.set(this._portraitScale);
-    }
 }
+

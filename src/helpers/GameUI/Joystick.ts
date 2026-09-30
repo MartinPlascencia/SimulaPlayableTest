@@ -1,6 +1,7 @@
 import { Container, FederatedPointerEvent, Point, Rectangle, Sprite, Assets } from 'pixi.js';
 import gsap from 'gsap';
 import ScaledContainer from '../Scale/ScaledContainer';
+import eventsSystem from '../../utils/EventsSystem';
 
 export interface JoystickOptions {
     baseId: string;
@@ -71,6 +72,8 @@ export default class Joystick extends Container {
     private onPointerDown(e: FederatedPointerEvent): void {
         this._dragging = true;
         this._pointerId = e.pointerId;
+        // Lets the tutorial hand dismiss itself the moment the player starts moving on their own.
+        eventsSystem.emit('joystickDragStart');
 
         // Move visuals only
         this._visuals.position.copyFrom(e.global);

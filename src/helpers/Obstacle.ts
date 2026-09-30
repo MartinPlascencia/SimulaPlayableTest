@@ -1,5 +1,5 @@
 import ModelAsset from './ModelAsset';
-import { Group, Object3D, AnimationClip, Vector3 } from 'three';
+import { Group, Object3D, AnimationClip, Vector3, MathUtils } from 'three';
 import { ObstacleMovementConfig, ObstaclePulseConfig, LevelBoundsData } from '../types/game';
 import gsap from 'gsap';
 
@@ -42,6 +42,13 @@ export default class Obstacle extends ModelAsset {
     private _initialScale: number = 0.8;
     private _pulseTween?: gsap.core.Tween;
     private readonly _pulseConfig: ObstaclePulseConfig = { scale: 1.2, duration: 0.6 };
+    /** Facing angle (radians) set by _rotateTowardsMovement - the "base" rotation, separate from the
+     *  wobble offset below, since they're combined additively into the final rotation.y each update. */
+    private _facingAngle: number = 0;
+    private _wobbleOffset: number = 0;
+    private _wobbleTween?: gsap.core.Tween;
+    private readonly _wobbleAngle: number = MathUtils.degToRad(15);
+    private readonly _wobbleDuration: number = 0.5;
 
     constructor(originalModel: Group | Object3D, insideObjectName?: string, animationClips?: AnimationClip[]) {
         super(originalModel, insideObjectName, animationClips);
@@ -57,7 +64,35 @@ export default class Obstacle extends ModelAsset {
         this._moveDirection = 1;
         this._moveOffset = 0;
         this._angle = 0;
+        this._facingAngle = 0;
         this._startPulse();
+        this._startWobble();
+    }
+
+    /** Starts the looping +/-15 degree yoyo rotation on top of the obstacle's facing angle, purely to make
+     *  it feel more alive while active. Kills any previous tween first since obstacles are pooled/reused. */
+    private _startWobble(): void {
+        this._wobbleTween?.kill();
+        this._wobbleOffset = 0;
+        this._applyRotation();
+
+        const proxy = { angle: -this._wobbleAngle };
+        this._wobbleTween = gsap.to(proxy, {
+            angle: this._wobbleAngle,
+            duration: this._wobbleDuration,
+            ease: 'sine.inOut',
+            yoyo: true,
+            repeat: -1,
+            onUpdate: () => {
+                this._wobbleOffset = proxy.angle;
+                this._applyRotation();
+            }
+        });
+    }
+
+    /** Combines the movement-facing angle and the wobble offset into the obstacle's final rotation.y. */
+    private _applyRotation(): void {
+        this.rotation.y = this._facingAngle + this._wobbleOffset;
     }
 
     /** Starts (or stops) the looping scale pulse. Kills any previous pulse tween first, since obstacles are
@@ -133,15 +168,19 @@ export default class Obstacle extends ModelAsset {
         const dz = this.position.z - this._previousPosition.z;
         if (Math.abs(dx) < 1e-5 && Math.abs(dz) < 1e-5) return;
 
-        this.rotation.y = Math.atan2(dx, dz);
+        this._facingAngle = Math.atan2(dx, dz);
+        this._applyRotation();
     }
 
-    /** Stops the looping scale pulse and resets scale to base. Called when the obstacle is returned to its
-     *  pool (hidden) between levels, so it doesn't keep tweening while off-screen. */
+    /** Stops the looping scale pulse and rotation wobble, and resets scale to base. Called when the obstacle
+     *  is returned to its pool (hidden) between levels, so it doesn't keep tweening while off-screen. */
     public stopPulse(): void {
         this._pulseTween?.kill();
         this._pulseTween = undefined;
         this.scale.set(this._initialScale, this._initialScale, this._initialScale);
+        this._wobbleTween?.kill();
+        this._wobbleTween = undefined;
+        this._wobbleOffset = 0;
     }
 
     public isInHitRange(character: Object3D): boolean {

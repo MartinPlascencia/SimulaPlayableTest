@@ -34,6 +34,7 @@ const levels: LevelConfig[] = [
             { position: { x: 5, y: 2, z: 6.5 } },
         ],
         reward: { name: "Glasses", modelId: "glasses", boneId: "headfront", scale: 1, offset: { x: 0, y: 0, z: -0.33 }, rotation: { x: -89.5, y: 0, z: 0 } }, // glasses.glb is already lightweight (45KB, no textures); tune scale/offset/rotation in-engine to fit
+        finalScreenMessageKey: "finalScreenBewareMoving",
     },
     {
         coinsToWin: 10,
@@ -57,10 +58,11 @@ const levels: LevelConfig[] = [
             { position: { x: 5, y: 2, z: 6 }, movement: { axis: 'vertical', distance: 3, speed: 1.3 } },
         ],
         reward: { name: "Hat", modelId: "hat", boneId: "headfront", scale: 0.25, offset: { x: 0, y: -0.4, z: -0.5 }, rotation: { x: -89.5, y: 0, z: 0 } }, // hat.glb's raw mesh is ~4 units across; tune scale/offset/rotation in-engine to fit
+        finalScreenMessageKey: "finalScreenBewareOrbiting",
     },
     {
         coinsToWin: 12,
-        startPosition: { x: 2.2, z: 8 },
+        startPosition: { x: 3.5, z: 8 },
         coinsPositions: [
             { x: -4.5, y: 2, z: 3.5 },
             { x: 3, y: 2, z: 4.5 },
@@ -84,6 +86,7 @@ const levels: LevelConfig[] = [
             { position: { x: -1, y: 2, z: 2 }, movement: { axis: 'circular', radius: 1.5, speed: 1.6 } },
         ],
         reward: null, // TODO: assign a distinct reward model once one exists; final screen shows a plain "Congratulations!" for now
+        finalScreenMessageKey: "finalScreenLastLevel",
     },
 ];
 
